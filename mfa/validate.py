@@ -1,27 +1,39 @@
-"""Command line functions for training new acoustic models"""
+"""Command line functions for validating corpora"""
 from __future__ import annotations
 
 import os
-import sys
 import argparse
+import atexit
+import multiprocessing as mp
+import sys
+import time
 from typing import TYPE_CHECKING, List, Optional
 
-from montreal_forced_aligner.acoustic_modeling import TrainableAligner
 from montreal_forced_aligner.command_line.utils import validate_model_arg
 from montreal_forced_aligner.exceptions import ArgumentError
-from montreal_forced_aligner.exceptions import MFAError
-from montreal_forced_aligner.models import MODEL_TYPES
+from montreal_forced_aligner.validation.corpus_validator import (
+    PretrainedValidator,
+    TrainingValidator,
+)
+from montreal_forced_aligner.validation.dictionary_validator import DictionaryValidator
+from montreal_forced_aligner.command_line.validate import (
+    run_validate_corpus,
+    run_validate_dictionary,
+)
 from montreal_forced_aligner.config import (
     load_command_history,
     load_global_config,
     update_command_history,
     update_global_config,
 )
+from montreal_forced_aligner.exceptions import MFAError
+from montreal_forced_aligner.models import MODEL_TYPES
 
 if TYPE_CHECKING:
     from argparse import Namespace, ArgumentParser
 
-__all__ = ["train_acoustic_model", "validate_args", "run_train_acoustic_model"]
+
+__all__ = ["validate_corpus", "validate_args", "run_validate_corpus"]
 
 def create_parser() -> ArgumentParser:
     """
@@ -155,68 +167,6 @@ def create_parser() -> ArgumentParser:
 
     _ = subparsers.add_parser("version")
 
-    train_parser = subparsers.add_parser(
-        "train", help="Train a new acoustic model on a corpus and optionally export alignments"
-    )
-    train_parser.add_argument(
-        "corpus_directory", type=str, help="Full path to the source directory to align"
-    )
-    train_parser.add_argument("dictionary_path", type=str, help=dictionary_path_help, default="")
-    train_parser.add_argument(
-        "output_paths",
-        type=str,
-        nargs="+",
-        help="Path to save the new acoustic model, path to export aligned TextGrids, or both",
-    )
-    train_parser.add_argument(
-        "--config_path",
-        type=str,
-        default="",
-        help="Path to config file to use for training and alignment",
-    )
-    train_parser.add_argument(
-        "-o",
-        "--output_model_path",
-        type=str,
-        default="",
-        help="Full path to save resulting acoustic model",
-    )
-    train_parser.add_argument(
-        "-s",
-        "--speaker_characters",
-        type=str,
-        default="0",
-        help="Number of characters of filenames to use for determining speaker, "
-        "default is to use directory names",
-    )
-    train_parser.add_argument(
-        "-a",
-        "--audio_directory",
-        type=str,
-        default="",
-        help="Audio directory root to use for finding audio files",
-    )
-    train_parser.add_argument(
-        "--phone_set",
-        dest="phone_set_type",
-        type=str,
-        help="Enable extra decision tree modeling based on the phone set",
-        default="UNKNOWN",
-        choices=["AUTO", "IPA", "ARPA", "PINYIN"],
-    )
-    train_parser.add_argument(
-        "--output_format",
-        type=str,
-        default="long_textgrid",
-        choices=["short_textgrid", "long_textgrid", "json"],
-        help="Format for aligned output files",
-    )
-    train_parser.add_argument(
-        "--include_original_text",
-        help="Flag to include original utterance text in the output",
-        action="store_true",
-    )
-    add_global_options(train_parser, textgrid_output=True)
 
     validate_parser = subparsers.add_parser("validate", help="Validate a corpus for use in MFA")
     validate_parser.add_argument(
@@ -393,151 +343,6 @@ def create_parser() -> ArgumentParser:
         action="store_true",
     )
 
-    train_lm_parser = subparsers.add_parser(
-        "train_lm", help="Train a language model from a corpus"
-    )
-    train_lm_parser.add_argument(
-        "source_path",
-        type=str,
-        help="Full path to the source directory to train from, alternatively "
-        "an ARPA format language model to convert for MFA use",
-    )
-    train_lm_parser.add_argument(
-        "output_model_path", type=str, help="Full path to save resulting language model"
-    )
-    train_lm_parser.add_argument(
-        "-m",
-        "--model_path",
-        type=str,
-        help="Full path to existing language model to merge probabilities",
-    )
-    train_lm_parser.add_argument(
-        "-w",
-        "--model_weight",
-        type=float,
-        default=1.0,
-        help="Weight factor for supplemental language model, defaults to 1.0",
-    )
-    train_lm_parser.add_argument(
-        "--dictionary_path", type=str, help=dictionary_path_help, default=""
-    )
-    train_lm_parser.add_argument(
-        "--config_path",
-        type=str,
-        default="",
-        help="Path to config file to use for training and alignment",
-    )
-    add_global_options(train_lm_parser)
-
-    train_dictionary_parser = subparsers.add_parser(
-        "train_dictionary",
-        help="Calculate pronunciation probabilities for a dictionary based on alignment results in a corpus",
-    )
-    train_dictionary_parser.add_argument(
-        "corpus_directory", help="Full path to the directory to align"
-    )
-    train_dictionary_parser.add_argument("dictionary_path", type=str, help=dictionary_path_help)
-    train_dictionary_parser.add_argument(
-        "acoustic_model_path",
-        type=str,
-        help=acoustic_model_path_help,
-    )
-    train_dictionary_parser.add_argument(
-        "output_directory",
-        type=str,
-        help="Full path to output directory, will be created if it doesn't exist",
-    )
-    train_dictionary_parser.add_argument(
-        "--config_path", type=str, default="", help="Path to config file to use for alignment"
-    )
-    train_dictionary_parser.add_argument(
-        "--silence_probabilities",
-        action="store_true",
-        help="Flag for saving silence information for pronunciations",
-    )
-    train_dictionary_parser.add_argument(
-        "-s",
-        "--speaker_characters",
-        type=str,
-        default="0",
-        help="Number of characters of file names to use for determining speaker, "
-        "default is to use directory names",
-    )
-    add_global_options(train_dictionary_parser)
-
-    train_ivector_parser = subparsers.add_parser(
-        "train_ivector",
-        help="Train an ivector extractor from a corpus and pretrained acoustic model",
-    )
-    train_ivector_parser.add_argument(
-        "corpus_directory",
-        type=str,
-        help="Full path to the source directory to train the ivector extractor",
-    )
-    train_ivector_parser.add_argument(
-        "output_model_path",
-        type=str,
-        help="Full path to save resulting ivector extractor",
-    )
-    train_ivector_parser.add_argument(
-        "-s",
-        "--speaker_characters",
-        type=str,
-        default="0",
-        help="Number of characters of filenames to use for determining speaker, "
-        "default is to use directory names",
-    )
-    train_ivector_parser.add_argument(
-        "--config_path", type=str, default="", help="Path to config file to use for training"
-    )
-    add_global_options(train_ivector_parser)
-
-    classify_speakers_parser = subparsers.add_parser(
-        "classify_speakers", help="Use an ivector extractor to cluster utterances into speakers"
-    )
-    classify_speakers_parser.add_argument(
-        "corpus_directory",
-        type=str,
-        help="Full path to the source directory to run speaker classification",
-    )
-    classify_speakers_parser.add_argument(
-        "ivector_extractor_path", type=str, default="", help=ivector_model_path_help
-    )
-    classify_speakers_parser.add_argument(
-        "output_directory",
-        type=str,
-        help="Full path to output directory, will be created if it doesn't exist",
-    )
-
-    classify_speakers_parser.add_argument(
-        "-s", "--num_speakers", type=int, default=0, help="Number of speakers if known"
-    )
-    classify_speakers_parser.add_argument(
-        "--cluster", help="Using clustering instead of classification", action="store_true"
-    )
-    classify_speakers_parser.add_argument(
-        "--config_path",
-        type=str,
-        default="",
-        help="Path to config file to use for ivector extraction",
-    )
-    add_global_options(classify_speakers_parser)
-
-    create_segments_parser = subparsers.add_parser(
-        "create_segments", help="Create segments based on voice activity dectection (VAD)"
-    )
-    create_segments_parser.add_argument(
-        "corpus_directory", help="Full path to the source directory to run VAD segmentation"
-    )
-    create_segments_parser.add_argument(
-        "output_directory",
-        type=str,
-        help="Full path to output directory, will be created if it doesn't exist",
-    )
-    create_segments_parser.add_argument(
-        "--config_path", type=str, default="", help="Path to config file to use for segmentation"
-    )
-    add_global_options(create_segments_parser)
 
     config_parser = subparsers.add_parser(
         "configure",
@@ -671,6 +476,7 @@ def create_parser() -> ArgumentParser:
 
     return parser
 
+
 def print_history(args: argparse.Namespace) -> None:
     """
     Print the history of MFA commands
@@ -694,9 +500,10 @@ def print_history(args: argparse.Namespace) -> None:
         for h in history:
             print(h["command"])
 
-def train_acoustic_model(args: Namespace, unknown_args: Optional[List[str]] = None) -> None:
+
+def validate_corpus(args: Namespace, unknown_args: Optional[List[str]] = None) -> None:
     """
-    Run the acoustic model training
+    Run the validation command
     Parameters
     ----------
     args: :class:`~argparse.Namespace`
@@ -704,29 +511,53 @@ def train_acoustic_model(args: Namespace, unknown_args: Optional[List[str]] = No
     unknown_args: list[str]
         Optional arguments that will be passed to configuration objects
     """
-    trainer = TrainableAligner(
-        corpus_directory=args.corpus_directory,
-        dictionary_path=args.dictionary_path,
-        temporary_directory=args.temporary_directory,
-        **TrainableAligner.parse_parameters(args.config_path, args, unknown_args),
-    )
+    if args.acoustic_model_path:
+        validator = PretrainedValidator(
+            acoustic_model_path=args.acoustic_model_path,
+            corpus_directory=args.corpus_directory,
+            dictionary_path=args.dictionary_path,
+            temporary_directory=args.temporary_directory,
+            **PretrainedValidator.parse_parameters(args.config_path, args, unknown_args),
+        )
+    else:
+        validator = TrainingValidator(
+            corpus_directory=args.corpus_directory,
+            dictionary_path=args.dictionary_path,
+            temporary_directory=args.temporary_directory,
+            **TrainingValidator.parse_parameters(args.config_path, args, unknown_args),
+        )
     try:
-        trainer.train()
-        if args.output_model_path is not None:
-            trainer.export_model(args.output_model_path)
-
-        if args.output_directory is not None:
-            output_format = getattr(args, "output_format", None)
-            trainer.export_files(
-                args.output_directory,
-                output_format,
-                include_original_text=getattr(args, "include_original_text", False),
-            )
+        validator.validate()
     except Exception:
-        trainer.dirty = True
+        validator.dirty = True
         raise
     finally:
-        trainer.cleanup()
+        validator.cleanup()
+
+
+def validate_dictionary(args: Namespace, unknown_args: Optional[List[str]] = None) -> None:
+    """
+    Run the validation command
+    Parameters
+    ----------
+    args: :class:`~argparse.Namespace`
+        Command line arguments
+    unknown_args: list[str]
+        Optional arguments that will be passed to configuration objects
+    """
+    validator = DictionaryValidator(
+        g2p_model_path=args.g2p_model_path,
+        dictionary_path=args.dictionary_path,
+        temporary_directory=args.temporary_directory,
+        **DictionaryValidator.parse_parameters(args.config_path, args, unknown_args),
+    )
+    try:
+        validator.validate(output_path=args.output_path)
+    except Exception:
+        validator.dirty = True
+        raise
+    finally:
+        validator.cleanup()
 
 
 def validate_args(args: Namespace) -> None:
@@ -745,37 +576,43 @@ def validate_args(args: Namespace) -> None:
         args.speaker_characters = int(args.speaker_characters)
     except ValueError:
         pass
-
-    args.output_directory = None
-    if not args.output_model_path:
-        args.output_model_path = None
-    output_paths = args.output_paths
-    if len(output_paths) > 2:
-        raise ArgumentError(f"Got more arguments for output_paths than 2: {output_paths}")
-    for path in output_paths:
-        if path.endswith(".zip"):
-            args.output_model_path = path
-        else:
-            args.output_directory = path.rstrip("/").rstrip("\\")
-
-    args.corpus_directory = args.corpus_directory.rstrip("/").rstrip("\\")
-    if args.corpus_directory == args.output_directory:
-        raise ArgumentError("Corpus directory and output directory cannot be the same folder.")
+    if args.test_transcriptions and args.ignore_acoustics:
+        raise ArgumentError("Cannot test transcriptions without acoustic feature generation.")
     if not os.path.exists(args.corpus_directory):
-        raise (ArgumentError(f'Could not find the corpus directory "{args.corpus_directory}".'))
+        raise (ArgumentError(f"Could not find the corpus directory {args.corpus_directory}."))
     if not os.path.isdir(args.corpus_directory):
         raise (
             ArgumentError(
-                f'The specified corpus directory "{args.corpus_directory}" is not a directory.'
+                f"The specified corpus directory ({args.corpus_directory}) is not a directory."
             )
         )
 
     args.dictionary_path = validate_model_arg(args.dictionary_path, "dictionary")
+    if args.acoustic_model_path:
+        args.acoustic_model_path = validate_model_arg(args.acoustic_model_path, "acoustic")
 
 
-def run_train_acoustic_model(args: Namespace, unknown_args: Optional[List[str]] = None) -> None:
+def validate_dictionary_args(args: Namespace) -> None:
     """
-    Wrapper function for running acoustic model training
+    Validate the command line arguments
+    Parameters
+    ----------
+    args: :class:`~argparse.Namespace`
+        Parsed command line arguments
+    Raises
+    ------
+    :class:`~montreal_forced_aligner.exceptions.ArgumentError`
+        If there is a problem with any arguments
+    """
+
+    args.dictionary_path = validate_model_arg(args.dictionary_path, "dictionary")
+    if args.g2p_model_path:
+        args.g2p_model_path = validate_model_arg(args.g2p_model_path, "g2p")
+
+
+def run_validate_corpus(args: Namespace, unknown_args: Optional[List[str]] = None) -> None:
+    """
+    Wrapper function for running corpus validation
     Parameters
     ----------
     args: :class:`~argparse.Namespace`
@@ -784,7 +621,21 @@ def run_train_acoustic_model(args: Namespace, unknown_args: Optional[List[str]] 
         Parsed command line arguments to be passed to the configuration objects
     """
     validate_args(args)
-    train_acoustic_model(args, unknown_args)
+    validate_corpus(args, unknown_args)
+
+
+def run_validate_dictionary(args: Namespace, unknown_args: Optional[List[str]] = None) -> None:
+    """
+    Wrapper function for running dictionary validation
+    Parameters
+    ----------
+    args: :class:`~argparse.Namespace`
+        Parsed command line arguments
+    unknown_args: list[str]
+        Parsed command line arguments to be passed to the configuration objects
+    """
+    validate_dictionary_args(args)
+    validate_dictionary(args, unknown_args)
 
 if __name__ == '__main__':
     """
@@ -794,7 +645,7 @@ if __name__ == '__main__':
     parser = create_parser()
     try:
         args, unknown = parser.parse_known_args()
-        run_train_acoustic_model(args, unknown)
+        run_validate_dictionary(args, unknown)
     except MFAError as e:
         if getattr(args, "debug", False):
             raise

@@ -49,7 +49,16 @@ mfa models download acoustic vietnamese_mfa
 mfa models download dictionary vietnamese_mfa
 ```
 
+## Evaluate corpus
+```
+python validate.py validate data/train/train --dictionary_path vietnamese_mfa --acoustic_model_path vietnamese_mfa --config_path config/mfa_config.yaml --clean --overwrite
+```
 ## Training
 ```
 python train.py train data/train/train --dictionary_path vietnamese_mfa --acoustic_model_path vietnamese_mfa --output_directory ~/output --config_path config/mfa_config.yaml --clean --overwrite
+```
+
+## Align
+```
+python align.py align data/train/train --dictionary_path vietnamese_mfa --acoustic_model_path vietnamese_mfa --output_directory ~/output --config_path config/mfa_config.yaml --clean --overwrite
 ```
