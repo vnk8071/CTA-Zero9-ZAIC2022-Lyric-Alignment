@@ -45,7 +45,7 @@ Then the Final IoU of across all 𝑛 audio segments is the average of their cor
 ### Montreal Forced Aligner
 The Montreal Forced Aligner is a command line utility for performing forced alignment of speech datasets using Kaldi (http://kaldi-asr.org/).
 
-For details: <a href="https://github.com/vnk8071/CTA-Zero9-ZAIC2022-Lyric-Alignment/blod/master/mfa">MFA folder</a>
+For details: <a href="https://github.com/vnk8071/CTA-Zero9-ZAIC2022-Lyric-Alignment/tree/master/mfa">MFA folder</a>
 ### Baseline on Public Test
 - Use pre-trained model.
 - Use upper case for split sequence.
