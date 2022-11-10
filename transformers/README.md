@@ -39,26 +39,13 @@ Then the Final IoU of across all 𝑛 audio segments is the average of their cor
 ```
 conda create -n lyric-alignment python=3.8
 conda activate lyric-alignment
-conda install -c conda-forge montreal-forced-aligner
-conda install -c conda-forge python=3.8 kaldi sox librosa biopython praatio tqdm requests colorama pyyaml pynini openfst baumwelch ngram
-```
-
-## Download pre-trained model and dictionary for Vietnamese language
-```
-mfa models download acoustic vietnamese_mfa
-mfa models download dictionary vietnamese_mfa
-```
-
-## Evaluate corpus
-```
-python validate.py validate data/train/train --dictionary_path vietnamese_mfa --acoustic_model_path vietnamese_mfa --config_path config/mfa_config.yaml --clean --overwrite
-```
-## Training
-```
-python train.py train data/train/train --dictionary_path models/vietnamese_mfa.dict --acoustic_model_path models/vietnamese_mfa.zip --output_directory output --config_path config/mfa_config.yaml --output_model_path output_model.zip --clean --overwrite
+pip install https://github.com/kpu/kenlm/archive/master.zip
+pip install -r requirements.txt
 ```
 
 ## Align
 ```
-python align.py align data/train/train --dictionary_path vietnamese_mfa --acoustic_model_path vietnamese_mfa --output_directory ~/output --config_path config/mfa_config.yaml --clean --overwrite
+python align.py --raw_wav "../data/public_test/songs" \
+--model_name nguyenvulebinh/wav2vec2-large-vi-vlsp2020 \
+--output_dir ./output_process
 ```
