@@ -1,7 +1,8 @@
-# Zalo AI Challenge 2022 - LyricAlignment
+# Zalo AI Challenge 2022 - Lyric Alignment
 
-[**Introduction**](#introduction) | [**Solutions**](#solutions) [[**MFA**](#montreal-forced-aligner)]
+[**Introduction**](#introduction) | [**Dataset**](#dataset) | [**Evaluation Metric**](#evaluation-metric) | [**Solutions**](#solutions) < [**MFA**](#montreal-forced-aligner) | [**Transformers** ](#transformers)> | [**Leaderboard**](#leaderboard)
 ## Team members:
+- Vu Xuan Hien <a href="https://github.com/XuanHien304">(Github)</a>
 - Truong Minh Khoa <a href="https://github.com/bipowerhcmcity">(Github)</a>
 - Vo Nguyen Khoi
 - Pham Bao Loc <a href="https://github.com/BaoLocPham">(Github)</a>
@@ -17,7 +18,7 @@ In this challenge, participants will build a model to align lyrics with a music 
 
 - Output: start-time and end-time of each word in the lyrics.
 
-### Dataset
+## Dataset
 [Training data]:
 1057 music segments from ~ 480 songs.
 
@@ -28,7 +29,7 @@ Public test: 264 music segments from ~ 120 songs without aligned lyric files.
 
 [Private test]: 464 music segments from ~ 200 songs without aligned lyric files.
 
-### Evaluation Metric
+## Evaluation Metric
 Accuracy of prediction will be evaluated using Intersection over Union (IoU).
 
 IoU of prediction and the ground truth of an audio segment (𝑠𝑖) is computed by the following formula:
@@ -54,4 +55,14 @@ For details: <a href="https://github.com/vnk8071/CTA-Zero9-ZAIC2022-Lyric-Alignm
 Result:
 <img src="images/baseline_mfa.jpg">
 
+### Transformers
+The model first processes the raw waveform of the speech audio with a multilayer convolutional neural network to get latent audio representations of 25ms each. These representations are then fed into a quantizer as well as a transformer. The quantizer chooses a speech unit for the latent audio representation from an inventory of learned units. About half the audio representations are masked before being fed into the transformer. The transformer adds information from the entire audio sequence. Finally, the output of the transformer is used to solve a contrastive task. This task requires the model to identify the correct quantized speech units for the masked positions.
+
+Source: https://ai.facebook.com/blog/wav2vec-20-learning-the-structure-of-speech-from-raw-audio/
+
+For details: <a href="https://github.com/vnk8071/CTA-Zero9-ZAIC2022-Lyric-Alignment/tree/master/transformers">Transformers folder</a>
+
 ### Improvement (Coming soon)
+
+## Leaderboard
+Link: https://challenge.zalo.ai/portal/lyric-alignment/leaderboard
