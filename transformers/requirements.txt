@@ -1,0 +1,7 @@
+numpy==1.23.4
+transformers==4.20.0
+pyctcdecode==v0.4.0
+pandas==1.5.1
+tqdm==4.64.1
+torch==1.10.0
+librosa==0.9.2 
