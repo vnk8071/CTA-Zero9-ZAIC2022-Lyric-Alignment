@@ -130,3 +130,12 @@ dmypy.json
 
 /songs
 /train
+/separated_audio
+/output
+/public_test_separated
+
+*.wav
+*.txt
+*.json
+
+*.zip

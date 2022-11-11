@@ -16,11 +16,20 @@ if __name__ == "__main__":
     parser.add_argument('--raw_lyric', help='raw lyric',
         default="./lyrics")
 
+    parser.add_argument('--output_dir', help='raw lyric',
+        default="./output")
     args = parser.parse_args()
     raw_output = args.raw_aligned
     raw_lyrics = args.raw_lyric
+    output = args.output_dir
 
-    file_names = [x.split("\\")[-1][:-4] for x in glob.glob("./aligned_output/*.csv")]
+    if not os.path.isdir(output):
+        os.makedirs(output)
 
+    print(raw_output)
+
+    file_names = [x.split(os.sep) for x in glob.glob("{raw_output}\*.csv")]
+
+    print(glob.glob("{raw_output}\*.csv"))
     for f in tqdm(file_names):
-        post_process_helper.post_process(f)
+        post_process_helper.post_process(f, raw_output, raw_lyrics, output)
