@@ -2,7 +2,7 @@ import json
 import numpy as np
 import pandas as pd
 import argparse
-from mfa.src import helpers
+import helpers
 import os
 
 

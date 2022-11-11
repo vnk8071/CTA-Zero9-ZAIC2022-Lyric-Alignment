@@ -14,6 +14,9 @@ def calculate_iou(ground_truth, prediction):
     Mean iou over aligment segments
     """
     rs = 0
+    print(prediction)
+    print("========")
+    print(ground_truth)
     G = np.ravel([l['l'] for l in ground_truth])
     P = np.ravel([l['l'] for l in prediction])
 
@@ -39,16 +42,15 @@ def union(j, G, P):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--ground_truth', help='ground truth file',
-        default="./test_data/37303134325f3137.json")
+        default="./data_eval/mfa_train_output_json/3130303230345f30.json")
     parser.add_argument('--predicted', help='predicted file',
-        default="./test_data/37303134325f3137_predicted_.json")
+        default="./data_eval/train_labels/3130303230345f30.json")
     args = parser.parse_args()
     GROUND_TRUTH = args.ground_truth
     PREDICTED = args.predicted
 
     with open(f'{GROUND_TRUTH}', 'r', encoding="UTF-8") as f:
         GROUND_TRUTH = json.load(f)
-
     with open(f'{PREDICTED}', 'r', encoding="UTF-8") as f:
         PREDICTED = json.load(f)
 
