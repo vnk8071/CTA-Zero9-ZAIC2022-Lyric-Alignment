@@ -30,6 +30,7 @@ def split_to_subdirectories(file_paths:list, output_dir:str, amount_per_folder:i
         The amount of files per folder to split the files into
     """
     os.mkdir(output_dir)
+    
     file_paths = chunks(file_paths, amount_per_folder)
     for index, chunk in enumerate(file_paths):
         os.mkdir(output_dir + os.sep+ str(index)) # Create a folder with a name of the current iteration index
@@ -50,4 +51,5 @@ if __name__ == "__main__":
     amount_per_folder = int(args.amount_per_folder)
     
     file_paths = get_abspath_files_in_directory(in_path) # Replace "original_folder" with the directory where your files are stored
+    file_paths = sorted(file_paths)
     split_to_subdirectories(file_paths,out_path, amount_per_folder)
