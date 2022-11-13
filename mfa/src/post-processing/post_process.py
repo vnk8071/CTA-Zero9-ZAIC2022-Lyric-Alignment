@@ -18,18 +18,34 @@ if __name__ == "__main__":
 
     parser.add_argument('--output_dir', help='raw lyric',
         default="./output")
+
+    parser.add_argument('--merge_blank', action='store_true')
+    parser.add_argument('--mfa', action='store_true')
+    parser.add_argument('--merge_strategy', default="vanilla")
+
     args = parser.parse_args()
     raw_output = args.raw_aligned
     raw_lyrics = args.raw_lyric
     output = args.output_dir
+    merge_blank = args.merge_blank
+    merge_strategy = args.merge_strategy
+    mfa = args.mfa
 
-    if not os.path.isdir(output):
-        os.makedirs(output)
+    print(f"Processing folder: {raw_output}")
+    file_names = [x.split("\\")[-1][:-4] for x in glob.glob(f"{raw_output}/*.csv")]
+    print(f"Merge strategy: {merge_strategy}" if merge_blank else "")
 
-    print(raw_output)
-
-    file_names = [x.split(os.sep) for x in glob.glob("{raw_output}\*.csv")]
-
-    print(glob.glob("{raw_output}\*.csv"))
     for f in tqdm(file_names):
-        post_process_helper.post_process(f, raw_output, raw_lyrics, output)
+        post_process_helper.post_process(f, raw_output, raw_lyrics,
+                output_dir=output,
+                merge_blank=merge_blank,
+                merge_strategy=merge_strategy,
+                mfa=mfa)
+
+    # for f in file_names:
+    #     if f.endswith("3130303030365f3431"):
+    #         post_process_helper.post_process(f, raw_output, raw_lyrics,
+    #             output_dir=output,
+    #             merge_blank=merge_blank,
+    #             merge_strategy=merge_strategy)
+
