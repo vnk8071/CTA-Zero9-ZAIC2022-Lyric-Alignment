@@ -5,7 +5,8 @@ import numpy as np
 def calculate_iou(ground_truth, prediction):
     """
     Calculate iou for forced aligment
-    
+
+
     Inputs:
     ground_truth: parsed json
     prediction: parsed json
@@ -14,12 +15,8 @@ def calculate_iou(ground_truth, prediction):
     Mean iou over aligment segments
     """
     rs = 0
-    print(prediction)
-    print("========")
-    print(ground_truth)
-    G = np.ravel([l['l'] for l in ground_truth])
-    P = np.ravel([l['l'] for l in prediction])
-
+    G = np.array([x for l in ground_truth for x in l['l'] ]).flatten()
+    P = np.array([x for l in prediction for x in l['l'] ]).flatten()
     for j in range(len(G)):
         iou_ = (intersection(j, G, P) + 1e-10) / (union(j, G, P) + 1e-10)
         rs += iou_
@@ -42,9 +39,9 @@ def union(j, G, P):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--ground_truth', help='ground truth file',
-        default="./data_eval/mfa_train_output_json/3130303230345f30.json")
+        default="./output/mfa_train_output_json/37323130315f3434.json")
     parser.add_argument('--predicted', help='predicted file',
-        default="./data_eval/train_labels/3130303230345f30.json")
+        default="./data_eval/train_labels/37323130315f3434.json")
     args = parser.parse_args()
     GROUND_TRUTH = args.ground_truth
     PREDICTED = args.predicted
