@@ -1,5 +1,8 @@
 import re
 
+def check_sequence_valid(l):
+    return sum([len(process_lyrics(ll["d"])) != 0 for ll in l])
+
 def check_start_sentence(word):
     return word[0].isupper()
 
