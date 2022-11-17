@@ -1,0 +1,2 @@
+python /demucs/seperate_vocal.py --input_dir /data/public_test/songs --output_dir /data/public_test/songs_seperated_tmp
+python /demucs/rename_files.py --input_dir /data/public_test/songs --output_dir /data/public_test/songs_seperated
