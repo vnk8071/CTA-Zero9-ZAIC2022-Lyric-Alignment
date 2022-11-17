@@ -127,3 +127,15 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+/songs
+/train
+/separated_audio
+/output
+/public_test_separated
+
+*.wav
+*.txt
+*.json
+
+*.zip
