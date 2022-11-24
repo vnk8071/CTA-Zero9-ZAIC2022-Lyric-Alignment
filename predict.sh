@@ -8,14 +8,14 @@ SEPERATED_DATA_DIR=data/public_test/songs_seperated
 OPTIMIZED_DATA_DIR=data/public_test/optimized
 OPTIMIZED_SPLITTED_DATA_DIR=data/public_test/optimized_splitted
 
-# echo "Extract public test sample"
-# rm -rf data/
-# mkdir data/
-# unzip ./public_test_sample.zip -d $PUBLIC_TEST
+echo "Extract public test sample"
+rm -rf data/
+mkdir data/
+unzip ./public_test_sample.zip -d $PUBLIC_TEST
 
-# echo "Separate vocal from raw audio"
-# python ./demucs/seperate_vocal.py --input_dir $SONG_RAW_DIR --output_dir $SONG_SEP_TEMP
-# python ./demucs/rename_files.py --input_dir $SONG_RAW_DIR --output_dir $SEPERATED_DATA_DIR
+echo "Separate vocal from raw audio"
+python3 ./demucs/seperate_vocal.py --input_dir $SONG_RAW_DIR --output_dir $SONG_SEP_TEMP
+python3 ./demucs/rename_files.py --input_dir $SONG_RAW_DIR --output_dir $SEPERATED_DATA_DIR
 
 mkdir $OPTIMIZED_DATA_DIR
 echo "Normalize audio clips to sample rate of 16k"
@@ -23,13 +23,13 @@ for file in $SEPERATED_DATA_DIR/*.wav
 do
     ffmpeg -i ${file} -ar 16000 -ac 1 -y  $OPTIMIZED_DATA_DIR/${file##*/}
 done
-# find  $SEPERATED_DATA_DIR -name "*.wav" -type f -exec sh -c "file=\"{}\" ; ffmpeg -i \"\$file\" -ar 16000 -ac 1 -y  $OPTIMIZED_DATA_DIR/${"\$file\"##/}" \;
+
 echo "Number of clips" $(ls $OPTIMIZED_DATA_DIR | wc -l)
 
 cp $PUBLIC_TEST/labels/*txt $OPTIMIZED_DATA_DIR
 
 echo "splitting audios and lyrics into folders..."
-python ./utils/split_folders.py --input_dir $OPTIMIZED_DATA_DIR --output_dir $PUBLIC_TEST/optimized_splitted --amount_per_folder 50
+python3 ./utils/split_folders.py --input_dir $OPTIMIZED_DATA_DIR --output_dir $PUBLIC_TEST/optimized_splitted --amount_per_folder 50
 echo "Number of folders" $(ls  $PUBLIC_TEST/optimized_splitted | wc -l)
 
 OUTPUT_DIR=./data/output/public_test_raw
@@ -53,15 +53,23 @@ PUBLIC_TEST_OUTPUT_RAW=./data/output/public_test_raw
 RAW_LYRIC_JSON=./data/public_test/json_labels
 OUTPUT_DIR=./data/output/public_test_json
 
-python ./utils/move_folders.py --source $PUBLIC_TEST_OUTPUT_RAW --destination $PUBLIC_TEST_OUTPUT_RAW
-python ./utils/remove_empty_folders.py --source $PUBLIC_TEST_OUTPUT_RAW
+python3 ./utils/move_folders.py --source $PUBLIC_TEST_OUTPUT_RAW --destination $PUBLIC_TEST_OUTPUT_RAW
+python3 ./utils/remove_empty_folders.py --source $PUBLIC_TEST_OUTPUT_RAW
 
 rm -r $SONG_SEP_TEMP
 rm -r $SONG_RAW_DIR
 
-# python ./mfa/src/post-processing/post_process.py --raw_aligned $PUBLIC_TEST_OUTPUT_RAW \
-# --raw_lyric $RAW_LYRIC_JSON \
-# --output_dir $OUTPUT_DIR \
-# --mfa --input_label_type json --merge_blank
+SUBMISSION_DIR = ./result
+mkdir SUBMISSION_DIR
 
-# echo "please run the `postprocess_public_test.sh` for finalize the output"
+OUTPUT_FILE=./result/submission.zip
+python3 ./mfa/src/post-processing/post_process.py --raw_aligned $PUBLIC_TEST_OUTPUT_RAW \
+--raw_lyric $RAW_LYRIC_JSON \
+--output_dir $OUTPUT_DIR \
+--mfa --input_label_type json --merge_blank
+
+echo "Done processed, saved postprocessed in" $OUTPUT_DIR
+
+zip $OUTPUT_FILE $OUTPUT_DIR
+
+echo "Output of submission will be saved in" $OUTPUT_FILE

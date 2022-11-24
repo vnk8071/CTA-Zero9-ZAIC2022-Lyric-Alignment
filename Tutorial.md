@@ -1,6 +1,14 @@
 # 1. Set up
 
-# 1.2 Get data for inference
+## 1.1 Install MFA
+```
+INSTALL_DIR="/tmp/mfa" # path to install directory
+
+bash ./install_mfa.sh {INSTALL_DIR}
+source {INSTALL_DIR}/miniconda3/bin/activate aligner; mfa align --help
+```
+
+## 1.2 Get data for inference
 
 The data for `public_test` and `private_test` are put in folder like this
 
@@ -58,5 +66,10 @@ Post processing, output in `data/output/public_test/`
 ```
 ./postprocess_public_test.sh
 ```
-
+or full pipeline predict
+```
+sed -i -e 's/\r$//' ./predict.sh
+chmod +x ./predict.sh
+./predict.sh
+```
 # 3. Inference on private test
