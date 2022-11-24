@@ -17,9 +17,9 @@ two_stems = 'vocals'   # only separate one stems from the rest, for instance
 # two_stems = "vocals"
 
 # Options for the output audio.
-mp3 = True
+mp3 = False
 mp3_rate = 320
-float32 = False  # output as float 32 wavs, unsused if 'mp3' is True.
+float32 = True  # output as float 32 wavs, unsused if 'mp3' is True.
 int24 = False 
 
 def find_files(in_path):
