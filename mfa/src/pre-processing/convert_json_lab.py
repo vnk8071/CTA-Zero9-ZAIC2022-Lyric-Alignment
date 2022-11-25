@@ -4,8 +4,8 @@ import re
 import os
 from tqdm import tqdm
 
-input_folder = "data/train/labels"
-output_folder = "data/train/lyrics"
+input_folder = "../data/train/labels"
+output_folder = "../data/train/lyrics"
 
 def clean_word(word):
     word = re.sub(r'\W', '', word)
@@ -21,9 +21,13 @@ for json_file in tqdm(os.listdir(input_folder)):
     json_file = json.load(f)
 
     for dct in json_file:
-        words.extend([clean_word(word['d']) for word in dct['l']])
+        for word in dct['l']:
+            word_lst = word['d'].split(" ")
+            word_cleaned = [clean_word(word) for word in word_lst]
+            words.extend(word_cleaned)
 
-    with open (os.path.join(output_folder, file_name + ".lab"), "w") as out_f:
+    with open (os.path.join(output_folder, file_name + ".txt"), "w") as out_f:
         out_f.write(" ".join(words))
 
 print("DONE")
+
