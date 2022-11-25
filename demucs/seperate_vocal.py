@@ -1,4 +1,5 @@
 #@title Useful functions, don't forget to execute
+import os
 import io
 from pathlib import Path
 import select
@@ -16,9 +17,9 @@ two_stems = 'vocals'   # only separate one stems from the rest, for instance
 # two_stems = "vocals"
 
 # Options for the output audio.
-mp3 = True
+mp3 = False
 mp3_rate = 320
-float32 = False  # output as float 32 wavs, unsused if 'mp3' is True.
+float32 = True  # output as float 32 wavs, unsused if 'mp3' is True.
 int24 = False 
 
 def find_files(in_path):
@@ -44,7 +45,10 @@ def copy_process_streams(process: sp.Popen):
 
     while fds:
         # `select` syscall will wait until one of the file descriptors has content.
-        ready, _, _ = select.select(fds, [], [])
+        if sys.platform == 'win32':
+            ready = os.read(fds)
+        else:
+            ready, _, _ = select.select(fds, [], [])
         for fd in ready:
             p_stream, std = stream_by_fd[fd]
             raw_buf = p_stream.read(2 ** 16)
@@ -58,7 +62,7 @@ def copy_process_streams(process: sp.Popen):
 def separate(in_path=None, out_path=None):
     # inp = inp 
     # out_path = out_path 
-    cmd = ["python3", "-m", "demucs.separate", "-o", str(out_path), "-n", model]
+    cmd = ["python", "-m", "demucs.separate", "-o", str(out_path), "-n", model]
     # if mp3:
     #     cmd += ["--mp3", f"--mp3-bitrate={mp3_rate}"]
     if float32:
@@ -90,6 +94,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     in_path = args.input_dir
     out_path = args.output_dir
+
+    if not (os.path.isdir(out_path)):
+        os.makedirs(out_path)
 
 
     separate(in_path, out_path)
