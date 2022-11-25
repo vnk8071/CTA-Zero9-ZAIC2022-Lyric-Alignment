@@ -34,7 +34,9 @@ if __name__ == "__main__":
     input_label_type = args.input_label_type
 
     print(f"Processing folder: {raw_output}")
+
     file_names = [x.split(os.sep)[-1][:-4] for x in glob.glob(f"{raw_output}/*.csv")]
+
     print(f"Merge strategy: {merge_strategy}" if merge_blank else "")
 
     for f in tqdm(file_names):
@@ -56,3 +58,10 @@ if __name__ == "__main__":
             print(f)
             break
 
+    # for f in file_names:
+    #     if f.endswith("37303932305f3431"):
+    #         post_process_helper.post_process(f, raw_output, raw_lyrics,
+    #             output_dir=output,
+    #             merge_blank=merge_blank,
+    #             merge_strategy=merge_strategy,
+    #             mfa=mfa)
