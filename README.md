@@ -59,7 +59,7 @@ The model first processes the raw waveform of the speech audio with a multilayer
 
 Source: https://ai.facebook.com/blog/wav2vec-20-learning-the-structure-of-speech-from-raw-audio/
 
-For details: <a href="https://github.com/vnk8071/CTA-Zero9-ZAIC2022-Lyric-Alignment/tree/master/transformers">Transformers folder</a>
+For details: <a href="https://github.com/vnk8071/CTA-Zero9-ZAIC2022-Lyric-Alignment/tree/master/vietnamese-wav2vec2">Vietnamese-wav2vec2 folder</a>
 
 ### Our pipeline
 <img src="images/pipeline.jpg">
