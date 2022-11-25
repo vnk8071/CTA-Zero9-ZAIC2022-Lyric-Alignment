@@ -8,13 +8,14 @@ def move_files(dir, new_root):
     for root, dirs, files in os.walk(dir):
         for name in files:
             filepath = root + os.sep + name
+            print(filepath)
             if not filepath.endswith("no_vocals.wav"):
                 # print(root, name)
-                new_name = root.split(os.sep)
+                new_name = root.split(os.sep)[-1] + ".wav"
                 old_name = os.path.join(root, name)
-                new_name = os.path.join(new_root, name)
-                os.rename(old_name, new_name)
-                r.append(new_name)
+                new_path = os.path.join(new_root, new_name)
+                os.rename(old_name, new_path)
+                r.append(new_path)
     return r
 
 # # Renaming the file

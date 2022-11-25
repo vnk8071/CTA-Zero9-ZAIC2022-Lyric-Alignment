@@ -13,9 +13,10 @@ rm -rf data/
 mkdir data/
 unzip ./public_test_sample.zip -d $PUBLIC_TEST
 
+start=`date +%s`
 echo "Separate vocal from raw audio"
 python3 ./demucs/seperate_vocal.py --input_dir $SONG_RAW_DIR --output_dir $SONG_SEP_TEMP
-python3 ./demucs/rename_files.py --input_dir $SONG_RAW_DIR --output_dir $SEPERATED_DATA_DIR
+python3 ./demucs/rename_files.py --input_dir $SONG_SEP_TEMP --output_dir $SEPERATED_DATA_DIR
 
 mkdir $OPTIMIZED_DATA_DIR
 echo "Normalize audio clips to sample rate of 16k"
@@ -60,16 +61,18 @@ rm -r $SONG_SEP_TEMP
 rm -r $SONG_RAW_DIR
 
 SUBMISSION_DIR = ./result
-mkdir SUBMISSION_DIR
+mkdir $SUBMISSION_DIR
 
 OUTPUT_FILE=./result/submission.zip
 python3 ./mfa/src/post-processing/post_process.py --raw_aligned $PUBLIC_TEST_OUTPUT_RAW \
 --raw_lyric $RAW_LYRIC_JSON \
 --output_dir $OUTPUT_DIR \
 --mfa --input_label_type json --merge_blank
-
+end=`date +%s`
 echo "Done processed, saved postprocessed in" $OUTPUT_DIR
 
 zip $OUTPUT_FILE $OUTPUT_DIR
 
+runtime=$((end-start))
+echo "Total time inference: {$runtime} second"
 echo "Output of submission will be saved in" $OUTPUT_FILE

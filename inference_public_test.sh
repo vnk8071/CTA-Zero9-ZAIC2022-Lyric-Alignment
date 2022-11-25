@@ -8,14 +8,14 @@ SEPERATED_DATA_DIR=data/public_test/songs_seperated
 OPTIMIZED_DATA_DIR=data/public_test/optimized
 OPTIMIZED_SPLITTED_DATA_DIR=data/public_test/optimized_splitted
 
-# echo "Extract public test sample"
-# rm -rf data/
-# mkdir data/
-# unzip ./public_test_sample.zip -d $PUBLIC_TEST
+echo "Extract public test sample"
+rm -rf data/
+mkdir data/
+unzip ./public_test_sample.zip -d $PUBLIC_TEST
 
-# echo "Separate vocal from raw audio"
-# python ./demucs/seperate_vocal.py --input_dir $SONG_RAW_DIR --output_dir $SONG_SEP_TEMP
-# python ./demucs/rename_files.py --input_dir $SONG_RAW_DIR --output_dir $SEPERATED_DATA_DIR
+echo "Separate vocal from raw audio"
+python ./demucs/seperate_vocal.py --input_dir $SONG_RAW_DIR --output_dir $SONG_SEP_TEMP
+python ./demucs/rename_files.py --input_dir $SONG_SEP_TEMP --output_dir $SEPERATED_DATA_DIR
 
 mkdir $OPTIMIZED_DATA_DIR
 echo "Normalize audio clips to sample rate of 16k"
