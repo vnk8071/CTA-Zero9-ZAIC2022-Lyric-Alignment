@@ -3,8 +3,7 @@
 [**Introduction**](#introduction) | [**Dataset**](#dataset) | [**Evaluation Metric**](#evaluation-metric) | [**Solutions**](#solutions) < [**MFA**](#montreal-forced-aligner) | [**Transformers** ](#transformers)> | [**Leaderboard**](#leaderboard)
 ## Team members:
 - Vu Xuan Hien <a href="https://github.com/XuanHien304">(Github)</a>
-- Truong Minh Khoa <a href="https://github.com/bipowerhcmcity">(Github)</a>
-- Vo Nguyen Khoi
+- Vo Nguyen Khoi (Me)
 - Pham Bao Loc <a href="https://github.com/BaoLocPham">(Github)</a>
 
 ## Introduction
@@ -55,14 +54,44 @@ For details: <a href="https://github.com/vnk8071/CTA-Zero9-ZAIC2022-Lyric-Alignm
 Result:
 <img src="images/baseline_mfa.jpg">
 
-### Transformers
+### Wav2Vec
 The model first processes the raw waveform of the speech audio with a multilayer convolutional neural network to get latent audio representations of 25ms each. These representations are then fed into a quantizer as well as a transformer. The quantizer chooses a speech unit for the latent audio representation from an inventory of learned units. About half the audio representations are masked before being fed into the transformer. The transformer adds information from the entire audio sequence. Finally, the output of the transformer is used to solve a contrastive task. This task requires the model to identify the correct quantized speech units for the masked positions.
 
 Source: https://ai.facebook.com/blog/wav2vec-20-learning-the-structure-of-speech-from-raw-audio/
 
 For details: <a href="https://github.com/vnk8071/CTA-Zero9-ZAIC2022-Lyric-Alignment/tree/master/transformers">Transformers folder</a>
 
-### Improvement (Coming soon)
+### Our pipeline
+<img src="images/pipeline.jpg">
+#1. Separate vocal
+
+- We use Demucs of Facebook-research team for removing noise of raw audio.
+- Use pre-trained model mdx_extra.
+
+#2. Pre-process
+
+- Normalize raw audio to 16k sample rate and convert to mono chanel.
+- Strip special character and process with lower case.
+- Convert number in lyric to string. 
+
+#3. Model MFA | wav2vec
+
+- We custom result inference of 2 models into same format: list of dictionary with 3 keys (word, start time, and end time)
+
+#4. Post-process
+
+- Merge time-step between 2 words 
+- Map output into ground truth label (json format)
+
+Running pipeline with bash script
+```
+sh ./predict.sh
+```
+### Improvement
+- Separate vocal to remove noise.
+- Merge time-step between 2 words.
+- Fine-tuning hyper-parameters for Vietnamese dataset.
+- Adapt new dataset from zing mp3.
 
 ## Leaderboard
 Link: https://challenge.zalo.ai/portal/lyric-alignment/leaderboard
