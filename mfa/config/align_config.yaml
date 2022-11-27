@@ -1,0 +1,32 @@
+beam: 4000
+retry_beam: 16000
+transition_scale: 1.0 # 1.0
+acoustic_scale: 0.1 # 0.1
+self_loop_scale: 0.1 # 0.1
+boost_silence: 1.0 # 1.0
+
+features:
+  type: "mfcc"
+  use_energy: false
+  use_pitch: true
+  frame_shift: 20 # 10
+  allow_downsample: true
+  allow_upsample: true
+  delta_pitch: 0.005 # 0.01
+  frame_length: 120 # 25
+  high_frequency: 7800
+  low_frequency: 20
+  max_f0: 500
+  min_f0: 50
+  penalty_factor: 0.1
+  sample_frequency: 16000
+  snip_edges: true
+  splice_left_context: 3
+  splice_right_context: 3
+  silence_weight: 0 # 0
+  fmllr_update_type: full
+  uses_cmvn: true
+  uses_deltas: true
+  uses_speaker_adaptation: true # true
+  uses_splices: true
+  uses_voiced: false

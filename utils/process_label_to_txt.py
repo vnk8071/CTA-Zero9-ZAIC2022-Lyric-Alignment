@@ -14,6 +14,18 @@ def clean_word(word):
     word = re.sub(r'\W', '', word)
     return word
 
+def convert_txt(json_file, root_dir, output_dir):
+    words = []
+    file_name = json_file.rsplit("/")[-1].split(".")[0]
+    f = open(os.path.join(root_dir, json_file), encoding="UTF-8")
+    json_file = json.load(f)
+
+    for dct in json_file:
+        words.extend([clean_word(word['d']) for word in dct['l']])
+
+    with open (os.path.join(output_dir, file_name + ".txt"), "w", encoding="UTF-8") as out_f:
+        out_f.write(" ".join(words))
+
 # if not os.path.exists(output_folder):
 #     os.makedirs(output_folder)
 
@@ -48,14 +60,5 @@ if __name__ == "__main__":
         os.makedirs(output_dir)
 
     for json_file in tqdm(os.listdir(root_dir)):
-        words = []
-        file_name = json_file.rsplit("/")[-1].split(".")[0]
-        f = open(os.path.join(root_dir, json_file), encoding="UTF-8")
-        json_file = json.load(f)
-
-        for dct in json_file:
-            words.extend([clean_word(word['d']) for word in dct['l']])
-
-        with open (os.path.join(output_dir, file_name + ".txt"), "w", encoding="UTF-8") as out_f:
-            out_f.write(" ".join(words))
+        convert_txt(json_file, root_dir, output_dir)
 

@@ -1,7 +1,6 @@
 import os
 import argparse
 
-
 def move_files(dir, new_root):
     r = []
     print(dir)

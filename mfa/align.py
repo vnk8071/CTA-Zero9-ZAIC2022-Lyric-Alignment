@@ -89,14 +89,14 @@ def create_parser() -> ArgumentParser:
         subparser.add_argument(
             "--clean",
             help=f"Remove files from previous runs, default is {GLOBAL_CONFIG['clean']}",
-            action="store_true",
-            default=GLOBAL_CONFIG["clean"],
+            action="store_false",
+            default=True,
         )
         subparser.add_argument(
             "--overwrite",
             help=f"Overwrite output files when they exist, default is {GLOBAL_CONFIG['overwrite']}",
-            action="store_true",
-            default=GLOBAL_CONFIG["overwrite"],
+            action="store_false",
+            default=True,
         )
         subparser.add_argument(
             "--debug",
@@ -155,33 +155,43 @@ def create_parser() -> ArgumentParser:
     )
 
     parser = argparse.ArgumentParser()
-
+    
     subparsers = parser.add_subparsers(dest="subcommand")
-    subparsers.required = True
 
     _ = subparsers.add_parser("version")
 
     align_parser = subparsers.add_parser(
-        "align", help="Align a corpus with a pretrained acoustic model"
+        "align", 
+        help="Align a corpus with a pretrained acoustic model",
     )
-    align_parser.add_argument("corpus_directory", help="Full path to the directory to align")
+    align_parser.add_argument(
+        "--corpus_directory", 
+        help="Full path to the directory to align",
+        default="data/test"
+        )
     align_parser.add_argument(
         "--dictionary_path",
         help=dictionary_path_help,
         type=str,
+        default="mfa/models/vietnamese_mfa_dict_ver3.dict"
     )
     align_parser.add_argument(
         "--acoustic_model_path",
         type=str,
         help=acoustic_model_path_help,
+        default="mfa/models/mfa_vn_vocal_train_combine_train_public_test.zip"
     )
     align_parser.add_argument(
         "--output_directory",
         type=str,
         help="Full path to output directory, will be created if it doesn't exist",
+        default="data/align1"
     )
     align_parser.add_argument(
-        "--config_path", type=str, default="", help="Path to config file to use for alignment"
+        "--config_path", 
+        type=str, 
+        default="mfa/config/align_config.yaml", 
+        help="Path to config file to use for alignment"
     )
     align_parser.add_argument(
         "-s",
@@ -213,7 +223,7 @@ def create_parser() -> ArgumentParser:
     align_parser.add_argument(
         "--output_format",
         type=str,
-        default="long_textgrid",
+        default="csv",
         choices=["long_textgrid", "short_textgrid", "json", "csv"],
         help="Format for aligned output files (default is long_textgrid)",
     )
@@ -308,7 +318,7 @@ def create_parser() -> ArgumentParser:
     model_save_parser.add_argument(
         "--overwrite",
         help="Flag to overwrite existing pretrained models with the same name (and model type)",
-        action="store_true",
+        action="store_false",
     )
 
     config_parser = subparsers.add_parser(
@@ -329,6 +339,7 @@ def create_parser() -> ArgumentParser:
         "-j",
         "--num_jobs",
         type=int,
+        default=100,
         help=f"Set the number of processes to use by default, defaults to {GLOBAL_CONFIG['num_jobs']}",
     )
     config_parser.add_argument(
@@ -558,7 +569,9 @@ if __name__ == '__main__':
     
     parser = create_parser()
     try:
-        args, unknown = parser.parse_known_args()
+        args, unknown = parser.parse_known_args(["align"])
+        print(args)
+        print(f"A: {unknown}")
         run_align_corpus(args, unknown)
     except MFAError as e:
         if getattr(args, "debug", False):
