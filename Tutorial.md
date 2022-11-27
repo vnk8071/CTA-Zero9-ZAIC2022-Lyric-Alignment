@@ -1,11 +1,16 @@
 # 1. Set up
 
-## 1.1 Install MFA
+## 1.1 Install packages
 ```
-INSTALL_DIR="/tmp/mfa" # path to install directory
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+chmod +x Miniconda3-latest-Linux-x86_64.sh
+./Miniconda3-latest-Linux-x86_64.sh
+source .bashrc
+conda install -c conda-forge montreal-forced-aligner
+conda install -c conda-forge python=3.8 kaldi sox librosa biopython praatio tqdm requests colorama pyyaml pynini openfst baumwelch ngram
+pip install -r requirements.txt
+pip install demucs
 
-bash ./install_mfa.sh {INSTALL_DIR}
-source {INSTALL_DIR}/miniconda3/bin/activate aligner; mfa align --help
 ```
 
 ## 1.2 Get data for inference
