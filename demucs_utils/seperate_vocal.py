@@ -11,7 +11,7 @@ import argparse
 
 
 # Customize the following options!
-model = "mdx_extra"
+model = "mdx_extra_q"
 extensions = ["mp3", "wav", "ogg", "flac"]  # we will look for all those file types.
 two_stems = 'vocals'   # only separate one stems from the rest, for instance
 # two_stems = "vocals"
@@ -62,7 +62,7 @@ def copy_process_streams(process: sp.Popen):
 def separate(in_path=None, out_path=None):
     # inp = inp 
     # out_path = out_path 
-    cmd = ["python", "-m", "demucs.separate", "-o", str(out_path), "-n", model]
+    cmd = ["python", "-m", "demucs.separate", "-o", str(out_path), "-n", model, "-j", "2"]
     # if mp3:
     #     cmd += ["--mp3", f"--mp3-bitrate={mp3_rate}"]
     if float32:
@@ -71,8 +71,12 @@ def separate(in_path=None, out_path=None):
         cmd += ["--int24"]
     if two_stems is not None:
       cmd += [f"--two-stems={two_stems}"]
-    files = [str(f) for f in find_files(in_path)]
-    if not files:
+    if os.path.isdir(in_path):
+        files = [str(f) for f in find_files(in_path)]
+    elif in_path.endswith(".wav") and not os.path.isdir(in_path):
+        print(f"Separate audio: {in_path}")
+        files = [in_path]
+    else:
         print(f"No valid audio files in {in_path}")
         return
     # print("Going to separate the files:")
