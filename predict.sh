@@ -15,8 +15,8 @@ unzip ./public_test_sample.zip -d $PUBLIC_TEST
 
 start=`date +%s`
 echo "Separate vocal from raw audio"
-python3 ./demucs/seperate_vocal.py --input_dir $SONG_RAW_DIR --output_dir $SONG_SEP_TEMP
-python3 ./demucs/rename_files.py --input_dir $SONG_SEP_TEMP --output_dir $SEPERATED_DATA_DIR
+python3 ./demucs_utils/seperate_vocal.py --input_dir $SONG_RAW_DIR --output_dir $SONG_SEP_TEMP
+python3 ./demucs_utils/rename_files.py --input_dir $SONG_SEP_TEMP --output_dir $SEPERATED_DATA_DIR
 
 mkdir $OPTIMIZED_DATA_DIR
 echo "Normalize audio clips to sample rate of 16k"
@@ -36,10 +36,11 @@ echo "Number of folders" $(ls  $PUBLIC_TEST/optimized_splitted | wc -l)
 OUTPUT_DIR=./data/output/public_test_raw
 mkdir -p $OUTPUT_DIR
 
-source $INSTALL_DIR/miniconda3/bin/activate aligner; \
-mfa align $OPTIMIZED_SPLITTED_DATA_DIR \
---dictionary_path vietnamese_mfa \
---acoustic_model_path vietnamese_mfa \
+# source $INSTALL_DIR/miniconda3/bin/activate aligner; \
+python3 mfa/align.py align $OPTIMIZED_SPLITTED_DATA_DIR \
+--dictionary_path mfa/models/vietnamese_mfa_dict_ver3.dict \
+--acoustic_model_path mfa/models/mfa_vn_vocal_train_combine_train_public_test.zip \
+--config_path mfa/config/align_config.yaml
 $OUTPUT_DIR \
 --output_format csv \
 --clean \
@@ -64,15 +65,16 @@ SUBMISSION_DIR = ./result
 mkdir $SUBMISSION_DIR
 
 OUTPUT_FILE=./result/submission.zip
-python3 ./mfa/src/post-processing/post_process.py --raw_aligned $PUBLIC_TEST_OUTPUT_RAW \
+python3 ./mfa/src/postprocessing/post_process.py --raw_aligned $PUBLIC_TEST_OUTPUT_RAW \
 --raw_lyric $RAW_LYRIC_JSON \
 --output_dir $OUTPUT_DIR \
 --mfa --input_label_type json --merge_blank
+
 end=`date +%s`
 echo "Done processed, saved postprocessed in" $OUTPUT_DIR
 
-zip $OUTPUT_FILE $OUTPUT_DIR
+zip -r -j $OUTPUT_FILE $OUTPUT_DIR
 
 runtime=$((end-start))
-echo "Total time inference: {$runtime} second"
+echo "Total time inference: $runtime second"
 echo "Output of submission will be saved in" $OUTPUT_FILE
