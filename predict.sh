@@ -8,6 +8,11 @@ SEPERATED_DATA_DIR=data/public_test/songs_seperated
 OPTIMIZED_DATA_DIR=data/public_test/optimized
 OPTIMIZED_SPLITTED_DATA_DIR=data/public_test/optimized_splitted
 
+OUTPUT_ROOT=./data/output
+PUBLIC_TEST_OUTPUT_RAW=./data/output/public_test_raw
+RAW_LYRIC_JSON=./data/public_test/json_labels
+OUTPUT_DIR=./data/output/public_test_json
+
 echo "Extract public test sample"
 rm -rf data/
 mkdir data/
@@ -27,33 +32,29 @@ done
 
 echo "Number of clips" $(ls $OPTIMIZED_DATA_DIR | wc -l)
 
-cp $PUBLIC_TEST/labels/*txt $OPTIMIZED_DATA_DIR
+python3 ./utils/process_label_to_txt.py --input_dir $RAW_LYRIC_JSON --output_dir $OPTIMIZED_DATA_DIR
+# cp $PUBLIC_TEST/labels/*txt $OPTIMIZED_DATA_DIR
 
 echo "splitting audios and lyrics into folders..."
 python3 ./utils/split_folders.py --input_dir $OPTIMIZED_DATA_DIR --output_dir $PUBLIC_TEST/optimized_splitted --amount_per_folder 50
 echo "Number of folders" $(ls  $PUBLIC_TEST/optimized_splitted | wc -l)
 
-OUTPUT_DIR=./data/output/public_test_raw
-mkdir -p $OUTPUT_DIR
+mkdir -p $PUBLIC_TEST_OUTPUT_RAW
 
 # source $INSTALL_DIR/miniconda3/bin/activate aligner; \
-python3 mfa/align.py align $OPTIMIZED_SPLITTED_DATA_DIR \
+python3 ./mfa/align.py align \
+--corpus_directory $OPTIMIZED_SPLITTED_DATA_DIR \
 --dictionary_path mfa/models/vietnamese_mfa_dict_ver3.dict \
 --acoustic_model_path mfa/models/mfa_vn_vocal_train_combine_train_public_test.zip \
---config_path mfa/config/align_config.yaml
-$OUTPUT_DIR \
+--config_path mfa/config/align_config.yaml \
+--output_directory $PUBLIC_TEST_OUTPUT_RAW \
 --output_format csv \
---clean \
---overwrite \
 --debug \
+-j 100 \
 --beam 4000 \
 --retry_beam 16000 \
 --frame_length 20 \
 --frame_shift 120
-
-PUBLIC_TEST_OUTPUT_RAW=./data/output/public_test_raw
-RAW_LYRIC_JSON=./data/public_test/json_labels
-OUTPUT_DIR=./data/output/public_test_json
 
 python3 ./utils/move_folders.py --source $PUBLIC_TEST_OUTPUT_RAW --destination $PUBLIC_TEST_OUTPUT_RAW
 python3 ./utils/remove_empty_folders.py --source $PUBLIC_TEST_OUTPUT_RAW
@@ -61,7 +62,7 @@ python3 ./utils/remove_empty_folders.py --source $PUBLIC_TEST_OUTPUT_RAW
 rm -r $SONG_SEP_TEMP
 rm -r $SONG_RAW_DIR
 
-SUBMISSION_DIR = ./result
+SUBMISSION_DIR=./result
 mkdir $SUBMISSION_DIR
 
 OUTPUT_FILE=./result/submission.zip
