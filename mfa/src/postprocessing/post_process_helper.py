@@ -1,9 +1,11 @@
 # pylint: disable-all
-import json
+import os
 import pandas as pd
 import argparse
+import sys
+sys.path.append(".")
 from mfa.src.postprocessing import helpers
-import os
+import json
 import numpy as np
 import tqdm
 import glob
