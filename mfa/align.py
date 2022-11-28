@@ -167,25 +167,21 @@ def create_parser() -> ArgumentParser:
     align_parser.add_argument(
         "--corpus_directory", 
         help="Full path to the directory to align",
-        default="data/test"
         )
     align_parser.add_argument(
         "--dictionary_path",
         help=dictionary_path_help,
         type=str,
-        default="mfa/models/vietnamese_mfa_dict_ver3.dict"
     )
     align_parser.add_argument(
         "--acoustic_model_path",
         type=str,
         help=acoustic_model_path_help,
-        default="mfa/models/mfa_vn_vocal_train_combine_train_public_test.zip"
     )
     align_parser.add_argument(
         "--output_directory",
         type=str,
         help="Full path to output directory, will be created if it doesn't exist",
-        default="data/align1"
     )
     align_parser.add_argument(
         "--config_path", 
@@ -569,9 +565,8 @@ if __name__ == '__main__':
     
     parser = create_parser()
     try:
-        args, unknown = parser.parse_known_args(["align"])
-        print(args)
-        print(f"A: {unknown}")
+        args, unknown = parser.parse_known_args()
+        print(f"A: {args}")
         run_align_corpus(args, unknown)
     except MFAError as e:
         if getattr(args, "debug", False):

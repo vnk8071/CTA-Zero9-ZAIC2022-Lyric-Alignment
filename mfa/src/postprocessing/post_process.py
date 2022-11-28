@@ -1,11 +1,12 @@
 import json
 import numpy as np
-# import pandas as pd
-import argparse
-import helpers
 import os
+import sys
+sys.path.append(".")
+import argparse
 import glob
-import post_process_helper
+from mfa.src.postprocessing import helpers
+from mfa.src.postprocessing import post_process_helper
 from tqdm import tqdm
 
 if __name__ == "__main__":
