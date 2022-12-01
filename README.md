@@ -1,6 +1,6 @@
 # Zalo AI Challenge 2022 - Lyric Alignment
 
-[**Introduction**](#introduction) | [**Dataset**](#dataset) | [**Evaluation Metric**](#evaluation-metric) | [**Solutions**](#solutions) < [**MFA**](#montreal-forced-aligner) | [**Transformers** ](#transformers)> | [**Leaderboard**](#leaderboard)
+[**Introduction**](#introduction) | [**Dataset**](#dataset) | [**Evaluation Metric**](#evaluation-metric) | [**Solutions**](#solutions) < [**MFA**](#montreal-forced-aligner) | [**Wav2vec** ](#wav2vec)> | [**Leaderboard**](#leaderboard)
 ## Team members:
 - Vu Xuan Hien <a href="https://github.com/XuanHien304">(Github)</a>
 - Vo Nguyen Khoi (Me)
@@ -94,4 +94,8 @@ sh ./predict.sh
 - Adapt new dataset from zing mp3.
 
 ## Leaderboard
+
+Finally, our ranking is 9 out of 129 teams in this challenge.
+<img src="images/final_leaderboard.jpg">
+
 Link: https://challenge.zalo.ai/portal/lyric-alignment/leaderboard
